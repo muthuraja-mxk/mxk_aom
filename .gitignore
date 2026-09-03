@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+backend/vendor/
+
+# Next.js build outputs
+frontend/.next/
+frontend/out/
+
+# Environment files
+.env
+backend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend/storage/logs/*.log
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+
+# Docker volumes
+.docker-data/
