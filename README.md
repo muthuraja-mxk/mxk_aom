@@ -157,9 +157,3 @@ To remove persistent volumes as well:
 ```bash
 docker compose down -v
 ```
-
----
-
-## 📄 License
-
-This repository is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
