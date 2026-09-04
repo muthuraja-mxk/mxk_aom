@@ -13,7 +13,6 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
-
 jobs:
 
   # ==================================================
@@ -106,16 +105,11 @@ jobs:
     needs:
       - frontend-build
       - backend-build
-
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      # ------------------------------
-      # Backend Tests
-      # ------------------------------
 
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -145,10 +139,6 @@ jobs:
           php artisan key:generate
           php artisan test
 
-      # ------------------------------
-      # Frontend Tests
-      # ------------------------------
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -173,7 +163,6 @@ jobs:
     name: "Stage 5 - SonarQube"
     needs:
       - unit-test
-
     runs-on: ubuntu-latest
 
     steps:
@@ -195,7 +184,6 @@ jobs:
     name: "Stage 6 - Docker Build"
     needs:
       - sonarqube
-
     runs-on: ubuntu-latest
 
     steps:
@@ -221,7 +209,6 @@ jobs:
     name: "Stage 7 - Deploy to EC2"
     needs:
       - docker-build
-
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
@@ -270,7 +257,6 @@ jobs:
     name: "Stage 8 - Smoke Test"
     needs:
       - deploy
-
     runs-on: ubuntu-latest
 
     steps:
