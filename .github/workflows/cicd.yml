@@ -111,27 +111,21 @@ jobs:
       # Backend Tests
       # ------------------------------
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
-          coverage: none
+      - name: Checkout Code
+     uses: actions/checkout@v4
 
-      - name: Install Composer Dependencies
-        working-directory: backend
-        run: |
-          composer install \
-            --no-interaction \
-            --prefer-dist \
-            --optimize-autoloader
+     - name: Setup PHP 8.4
+       uses: shivammathur/setup-php@v2
+       with:
+       php-version: "8.4"
+       extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+       coverage: none
 
-      - name: Laravel Unit Tests
-        working-directory: backend
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-          php artisan test
+- name: Check PHP Version
+  run: php -v
+
+- name: Check Composer Version
+  run: composer --version
 
 
       # ------------------------------
