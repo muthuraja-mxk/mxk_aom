@@ -2,14 +2,17 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "Laravel 13 REST API Backend with PHP 8.4",
-    "keywords": ["laravel", "framework", "api", "php8.4"],
+    "keywords": [
+        "laravel",
+        "framework",
+        "api",
+        "php8.4"
+    ],
     "license": "MIT",
-      "require": {
-    "php": "^8.4",
-    "laravel/framework": "^13.0"
-},
-},
-    
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0"
+    },
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.21",
@@ -42,7 +45,9 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php artisan key:generate --ansi"
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
         ]
     },
     "extra": {
