@@ -270,4 +270,3 @@ jobs:
       - name: Deployment Successful
         run: |
           echo "Application deployed successfully!"
-```
