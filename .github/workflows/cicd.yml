@@ -109,7 +109,7 @@ jobs:
           php artisan package:discover --ansi
 
 
-  # ==================================================
+    # ==================================================
   # STAGE 4 - UNIT TEST
   # ==================================================
 
@@ -124,6 +124,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # ------------------------------
+      # Backend Tests
+      # ------------------------------
+
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
@@ -137,13 +141,25 @@ jobs:
       - name: Check Composer Version
         run: composer --version
 
+      - name: Prepare Laravel Directories
+        working-directory: backend
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
+
       - name: Install Composer Dependencies
         working-directory: backend
         run: |
           composer install \
             --no-interaction \
             --prefer-dist \
-            --optimize-autoloader
+            --optimize-autoloader \
+            --no-scripts
+
+      - name: Laravel Package Discovery
+        working-directory: backend
+        run: |
+          php artisan package:discover --ansi
 
       - name: Laravel Unit Tests
         working-directory: backend
@@ -151,6 +167,10 @@ jobs:
           cp .env.example .env
           php artisan key:generate
           php artisan test
+
+      # ------------------------------
+      # Frontend Tests
+      # ------------------------------
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
