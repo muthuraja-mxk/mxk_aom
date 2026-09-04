@@ -93,7 +93,7 @@ jobs:
   # STAGE 4 - UNIT TEST
   # ==================================================
 
-  unit-test:
+    unit-test:
     name: "Stage 4 - Unit Testing"
     needs:
       - frontend-build
