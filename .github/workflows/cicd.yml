@@ -56,7 +56,7 @@ jobs:
         run: npm run build
 
 
-    # ==================================================
+      # ==================================================
   # STAGE 3 - BACKEND INSTALL
   # ==================================================
 
@@ -98,7 +98,15 @@ jobs:
           composer install \
             --no-interaction \
             --prefer-dist \
-            --optimize-autoloader
+            --optimize-autoloader \
+            --no-scripts
+
+      - name: Laravel Package Discovery
+        working-directory: backend
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
+          php artisan package:discover --ansi
 
 
   # ==================================================
