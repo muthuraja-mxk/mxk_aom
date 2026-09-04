@@ -4,11 +4,10 @@
     "description": "Laravel 13 REST API Backend with PHP 8.4",
     "keywords": ["laravel", "framework", "api", "php8.4"],
     "license": "MIT",
-    "require": {
-        "php": "^8.4",
-        "laravel/framework": "^13.0",
-        "laravel/tinker": "^2.10",
-        "fruitcake/laravel-cors": "^3.0"
+      "require": {
+    "php": "^8.4",
+    "laravel/framework": "^13.0"
+},
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
