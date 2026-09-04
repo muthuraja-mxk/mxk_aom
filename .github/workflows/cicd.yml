@@ -56,49 +56,49 @@ jobs:
         run: npm run build
 
 
+    # ==================================================
+  # STAGE 3 - BACKEND INSTALL
   # ==================================================
-# STAGE 3 - BACKEND INSTALL
-# ==================================================
 
-backend-build:
-  name: "Stage 3 - Laravel Build"
-  needs: checkout
-  runs-on: ubuntu-latest
+  backend-build:
+    name: "Stage 3 - Laravel Build"
+    needs: checkout
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP 8.4
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: "8.4"
-        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
-        coverage: none
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+          coverage: none
 
-    - name: Check PHP Version
-      run: php -v
+      - name: Check PHP Version
+        run: php -v
 
-    - name: Check Composer Version
-      run: composer --version
+      - name: Check Composer Version
+        run: composer --version
 
-    - name: Validate composer.json
-      working-directory: backend
-      run: composer validate --no-check-publish
+      - name: Validate composer.json
+        working-directory: backend
+        run: composer validate --no-check-publish
 
-    - name: Prepare Laravel Directories
-      working-directory: backend
-      run: |
-        mkdir -p bootstrap/cache
-        chmod -R 775 bootstrap/cache
+      - name: Prepare Laravel Directories
+        working-directory: backend
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
 
-    - name: Install Composer Dependencies
-      working-directory: backend
-      run: |
-        composer install \
-          --no-interaction \
-          --prefer-dist \
-          --optimize-autoloader
+      - name: Install Composer Dependencies
+        working-directory: backend
+        run: |
+          composer install \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader
 
 
   # ==================================================
