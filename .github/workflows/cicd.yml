@@ -161,12 +161,9 @@ jobs:
         run: |
           php artisan package:discover --ansi
 
-      - name: Laravel Unit Tests
+            - name: Run Unit Tests
         working-directory: backend
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-          php artisan test
+        run: php vendor/bin/phpunit
 
       # ------------------------------
       # Frontend Tests
