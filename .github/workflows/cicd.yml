@@ -186,7 +186,7 @@ jobs:
 
   
   # ==================================================
-  # STAGE 6 - DOCKER BUILD
+  # STAGE 5 - DOCKER BUILD
   # ==================================================
 
   docker-build:
@@ -206,18 +206,34 @@ jobs:
 
       - name: Docker Compose Version
         run: docker compose version
-
       - name: Build Docker Images
         run: |
           docker compose build
 
 
-  # ==================================================
-  # STAGE 7 - DEPLOY TO EC2
+    # ==================================================
+  # STAGE 6 - DEPLOY TO EC2
   # ==================================================
 
-        - name: Deploy Application
-          run: |
+  deploy:
+    name: "Stage 7 - Deploy to EC2"
+    needs:
+      - docker-build
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create SSH Key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
+          chmod 600 ec2-key.pem
+
+      - name: Deploy Application
+        run: |
           ssh -o StrictHostKeyChecking=no \
             -i ec2-key.pem \
             "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
@@ -236,9 +252,14 @@ jobs:
 
           EOF
 
+      - name: Remove SSH Key
+        if: always()
+        run: |
+          rm -f ec2-key.pem
+
 
   # ==================================================
-  # STAGE 8 - SMOKE TEST
+  # STAGE 7 - SMOKE TEST
   # ==================================================
 
   smoke-test:
