@@ -27,6 +27,10 @@ COPY composer.json ./
 # Copy all project files
 COPY . .
 
+# Create Laravel cache directory
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/bootstrap/cache
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
