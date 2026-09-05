@@ -216,48 +216,25 @@ jobs:
   # STAGE 7 - DEPLOY TO EC2
   # ==================================================
 
-  deploy:
-    name: "Stage 7 - Deploy to EC2"
-    needs:
-      - docker-build
-    runs-on: ubuntu-latest
-
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Create SSH Key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
-          chmod 600 ec2-key.pem
-
-      - name: Deploy Application
-        run: |
-          ssh \
-            -o StrictHostKeyChecking=no \
+        - name: Deploy Application
+          run: |
+          ssh -o StrictHostKeyChecking=no \
             -i ec2-key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
 
-              cd /home/ubuntu/mxk_aom
+          cd /home/ubuntu/mxk_aom
 
-              git pull origin main
+          git pull origin main
 
-              docker compose down
+          docker compose down
 
-              docker compose build
+          docker compose build
 
-              docker compose up -d
+          docker compose up -d
 
-              docker compose ps
+          docker compose ps
 
           EOF
-
-      - name: Remove SSH Key
-        if: always()
-        run: |
-          rm -f ec2-key.pem
 
 
   # ==================================================
