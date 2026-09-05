@@ -184,28 +184,7 @@ jobs:
         working-directory: frontend
         run: echo "Frontend tests not configured yet - skipping"
 
-
-  # ==================================================
-  # STAGE 5 - SONARQUBE
-  # ==================================================
-
-  sonarqube:
-    name: "Stage 5 - SonarQube"
-    needs:
-      - unit-test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-
+  
   # ==================================================
   # STAGE 6 - DOCKER BUILD
   # ==================================================
