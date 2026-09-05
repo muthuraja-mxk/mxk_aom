@@ -275,7 +275,7 @@ jobs:
 
       - name: Check Backend
         run: |
-          curl -f http://${{ secrets.EC2_HOST }}:8080
+          curl -f http://${{ secrets.EC2_HOST }}:8000
 
       - name: Deployment Successful
         run: |
