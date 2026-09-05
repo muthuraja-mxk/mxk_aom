@@ -192,7 +192,9 @@ jobs:
   docker-build:
     name: "Stage 6 - Docker Build"
     needs:
-      - sonarqube
+      - frontend-build
+      - backend-build
+      - unit-test
     runs-on: ubuntu-latest
 
     steps:
