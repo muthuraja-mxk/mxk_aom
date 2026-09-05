@@ -28,17 +28,20 @@ COPY composer.json ./
 
 COPY . .
 
-# Create Laravel required directories BEFORE Composer
-RUN mkdir -p bootstrap/cache \
-    && chmod -R 777 bootstrap/cache \
-    && mkdir -p storage/framework/cache/data \
-    && mkdir -p storage/framework/sessions \
-    && mkdir -p storage/framework/views \
-    && mkdir -p storage/logs \
-    && chmod -R 777 storage
+# Laravel directories required before Composer
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && chmod 777 /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/cache/data \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && chmod -R 777 /var/www/html/storage
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Disable Composer scripts during dependency installation
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Run Laravel package discovery after directories exist
+RUN php artisan package:discover --ansi
 
 RUN chmod +x /var/www/html/artisan || true
 
