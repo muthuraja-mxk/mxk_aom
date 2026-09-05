@@ -208,7 +208,7 @@ jobs:
         run: docker compose version
       - name: Build Docker Images
         run: |
-          docker compose build
+          docker compose build --no-cache
 
 
     # ==================================================
@@ -244,7 +244,7 @@ jobs:
 
           docker compose down
 
-          docker compose build
+          docker compose build --no-cache
 
           docker compose up -d
 
