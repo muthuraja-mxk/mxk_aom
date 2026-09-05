@@ -271,8 +271,7 @@ jobs:
     steps:
       - name: Check Frontend
         run: |
-          curl -f http://${{ secrets.EC2_HOST }}:3000
-
+          curl -f http://${{ secrets.EC2_HOST }}:3001
       - name: Check Backend
         run: |
           curl -f http://${{ secrets.EC2_HOST }}:8000

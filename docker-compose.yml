@@ -42,9 +42,6 @@ services:
       FRONTEND_URL: "http://localhost:3000"
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/var/www/html
-      - /var/www/html/vendor
     depends_on:
       db:
         condition: service_healthy
@@ -62,7 +59,7 @@ services:
       NEXT_PUBLIC_BACKEND_API_URL: "http://localhost:8000"
       NODE_ENV: development
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -27,6 +27,9 @@ COPY composer.json ./
 # Copy all project files
 COPY . .
 
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
 # Set permissions
 RUN chmod +x /var/www/html/artisan || true
 
