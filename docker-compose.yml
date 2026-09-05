@@ -9,9 +9,8 @@ services:
       MYSQL_DATABASE: app_db
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
-    ports:
-      - "3306:3306"
-    volumes:
+    
+        volumes:
       - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -proot_password_secret || exit 1"]
