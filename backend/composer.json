@@ -2,29 +2,29 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-<<<<<<< HEAD
+
     "description": "Laravel 13 REST API Backend with PHP 8.4",
     "keywords": [
         "laravel",
         "framework",
         "api",
         "php8.4"
-=======
+
     "description": "Bank Account Opening Management System.",
     "keywords": [
         "laravel",
         "framework"
->>>>>>> old-repo/main
+
     ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
-<<<<<<< HEAD
+
         "laravel/framework": "^13.0"
-=======
+
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0"
->>>>>>> old-repo/main
+
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -81,12 +81,12 @@
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
-<<<<<<< HEAD
-=======
+
+
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
->>>>>>> old-repo/main
+
         ]
     },
     "extra": {
