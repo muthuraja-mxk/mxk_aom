@@ -2,11 +2,8 @@ name: CI-CD Pipeline
 
 on:
    workflow_dispatch:
-<<<<<<< HEAD
+
 =======
-
->>>>>>> old-repo/main
-
 jobs:
 
   # ==================================================
@@ -51,11 +48,11 @@ jobs:
         run: npm run build
 
 
-<<<<<<< HEAD
+
       # ==================================================
 =======
     # ==================================================
->>>>>>> old-repo/main
+
   # STAGE 3 - BACKEND INSTALL
   # ==================================================
 
@@ -85,7 +82,6 @@ jobs:
         working-directory: backend
         run: composer validate --no-check-publish
 
-<<<<<<< HEAD
       - name: Prepare Laravel Directories
         working-directory: backend
         run: |
@@ -93,7 +89,7 @@ jobs:
           chmod -R 775 bootstrap/cache
 
 =======
->>>>>>> old-repo/main
+
       - name: Install Composer Dependencies
         working-directory: backend
         run: |
@@ -110,12 +106,12 @@ jobs:
           chmod -R 775 bootstrap/cache
           php artisan package:discover --ansi
 
-<<<<<<< HEAD
+
 
     # ==================================================
 =======
   # ==================================================
->>>>>>> old-repo/main
+
   # STAGE 4 - UNIT TEST
   # ==================================================
 
@@ -285,7 +281,5 @@ jobs:
       - name: Deployment Successful
         run: |
           echo "Application deployed successfully!"
-<<<<<<< HEAD
 =======
-          
->>>>>>> old-repo/main
+        
