@@ -135,7 +135,7 @@ jobs:
       - name: Check Composer Version
         run: composer --version
 
-            - name: Install Composer Dependencies
+      - name: Install Composer Dependencies
         working-directory: backend
         run: |
           composer install \
@@ -147,14 +147,9 @@ jobs:
       - name: Laravel Package Discovery
         working-directory: backend
         run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
           php artisan package:discover --ansi
-
-      - name: Check ExampleTest File
-        working-directory: backend
-        run: |
-          echo "===== ExampleTest.php ====="
-          cat tests/Unit/ExampleTest.php
-          echo "===== End File ====="
 
       - name: Run Unit Tests
         working-directory: backend
@@ -204,7 +199,7 @@ jobs:
 
       - name: Build Docker Images
         run: |
-          docker compose build --no-cache
+          docker compose build
 
 
   # ==================================================
@@ -240,7 +235,7 @@ jobs:
 
           docker compose down
 
-          docker compose build --no-cache
+          docker compose build
 
           docker compose up -d
 
@@ -276,3 +271,4 @@ jobs:
       - name: Deployment Successful
         run: |
           echo "Application deployed successfully!"
+
