@@ -155,6 +155,13 @@ jobs:
         run: |
           php artisan package:discover --ansi
 
+            - name: Check ExampleTest File
+        working-directory: backend
+        run: |
+          echo "===== ExampleTest.php ====="
+          cat tests/Unit/ExampleTest.php
+          echo "===== End File ====="
+
       - name: Run Unit Tests
         working-directory: backend
         run: php vendor/bin/phpunit
