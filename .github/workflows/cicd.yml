@@ -135,7 +135,7 @@ jobs:
       - name: Check Composer Version
         run: composer --version
 
-      - name: Install Composer Dependencies
+            - name: Install Composer Dependencies
         working-directory: backend
         run: |
           composer install \
@@ -143,6 +143,12 @@ jobs:
             --prefer-dist \
             --optimize-autoloader \
             --no-scripts
+
+      - name: Prepare Laravel Environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
 
       - name: Laravel Package Discovery
         working-directory: backend
