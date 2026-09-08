@@ -1,3 +1,4 @@
+```php
 <?php
 
 namespace Tests\Unit;
@@ -11,8 +12,4 @@ class ExampleTest extends TestCase
         $this->assertTrue(true);
     }
 }
-
-test('that true is true', function () {
-    expect(true)->toBeTrue();
-});
-
+```
