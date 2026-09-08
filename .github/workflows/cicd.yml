@@ -150,12 +150,12 @@ jobs:
             --optimize-autoloader \
             --no-scripts
 
-      - name: Laravel Package Discovery
+            - name: Laravel Package Discovery
         working-directory: backend
         run: |
           php artisan package:discover --ansi
 
-            - name: Check ExampleTest File
+      - name: Check ExampleTest File
         working-directory: backend
         run: |
           echo "===== ExampleTest.php ====="
