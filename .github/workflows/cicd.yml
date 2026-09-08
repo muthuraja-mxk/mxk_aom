@@ -135,13 +135,7 @@ jobs:
       - name: Check Composer Version
         run: composer --version
 
-      - name: Prepare Laravel Directories
-        working-directory: backend
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 775 bootstrap/cache
-
-      - name: Install Composer Dependencies
+            - name: Install Composer Dependencies
         working-directory: backend
         run: |
           composer install \
@@ -150,7 +144,7 @@ jobs:
             --optimize-autoloader \
             --no-scripts
 
-            - name: Laravel Package Discovery
+      - name: Laravel Package Discovery
         working-directory: backend
         run: |
           php artisan package:discover --ansi
