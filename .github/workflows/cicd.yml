@@ -185,29 +185,7 @@ jobs:
   # STAGE 5 - DOCKER BUILD
   # ==================================================
 
-  #docker-build:
-    name: "Stage 5 - Docker Build"
-    needs:
-      - frontend-build
-      - backend-build
-      - unit-test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Docker Version
-        run: docker --version
-
-      - name: Docker Compose Version
-        run: docker compose version
-
-      - name: Build Docker Images
-        run: |
-          #docker compose build
-
-
+  
   # ==================================================
   # STAGE 6 - DEPLOY TO EC2
   # ==================================================
