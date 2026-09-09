@@ -182,18 +182,13 @@ jobs:
 
 
   # ==================================================
-  # STAGE 5 - DOCKER BUILD
-  # ==================================================
-
-  
-  # ==================================================
-  # STAGE 6 - DEPLOY TO EC2
+  # STAGE 5 - DEPLOY TO EC2
   # ==================================================
 
   deploy:
-    name: "Stage 6 - Deploy to EC2"
+    name: "Stage 5 - Deploy to EC2"
     needs:
-      - docker-build
+      - unit-test
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
@@ -215,14 +210,19 @@ jobs:
 
           cd /home/ubuntu/mxk_aom
 
+          echo "Pulling latest code..."
           git pull origin main
 
+          echo "Stopping existing containers..."
           docker compose down
 
+          echo "Building Docker images..."
           docker compose build
 
+          echo "Starting application..."
           docker compose up -d
 
+          echo "Checking container status..."
           docker compose ps
 
           EOF
@@ -234,11 +234,11 @@ jobs:
 
 
   # ==================================================
-  # STAGE 7 - SMOKE TEST
+  # STAGE 6 - SMOKE TEST
   # ==================================================
 
   smoke-test:
-    name: "Stage 7 - Smoke Test"
+    name: "Stage 6 - Smoke Test"
     needs:
       - deploy
     runs-on: ubuntu-latest
