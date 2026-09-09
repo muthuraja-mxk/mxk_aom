@@ -88,3 +88,12 @@ networks:
 volumes:
   db_data:
     driver: local
+
+  sonarqube_data:
+    driver: local
+
+  sonarqube_extensions:
+    driver: local
+
+  sonarqube_logs:
+    driver: local
