@@ -9,7 +9,7 @@ A complete, modern full-stack web application monorepo featuring a containerized
 | Service | Framework / Technology | Version | Base Container Image | Port |
 | :--- | :--- | :--- | :--- | :--- |
 | **Backend REST API** | Laravel 13 | PHP `8.4` | `php:8.4-cli-alpine` | `8000` |
-| **Frontend Web App** | Next.js 16.3 (App Router) | Node `26` | `node:26-alpine` | `3000` |
+| **Frontend Web App** | Next.js 16.3 (App Router) | Node `26` | `node:26-alpine` | `3001` |
 | **Database** | MySQL | `9.7` stream (`9.0`) | `mysql:9.0` | `3306` |
 | **Orchestration** | Docker Compose | `3.8+` | — | — |
 
