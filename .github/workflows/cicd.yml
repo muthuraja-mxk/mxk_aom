@@ -135,7 +135,7 @@ jobs:
       - name: Check Composer Version
         run: composer --version
 
-            - name: Install Composer Dependencies
+      - name: Install Composer Dependencies
         working-directory: backend
         run: |
           composer install \
