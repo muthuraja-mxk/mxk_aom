@@ -185,7 +185,7 @@ jobs:
   # STAGE 5 - DOCKER BUILD
   # ==================================================
 
-  docker-build:
+  #docker-build:
     name: "Stage 5 - Docker Build"
     needs:
       - frontend-build
@@ -205,7 +205,7 @@ jobs:
 
       - name: Build Docker Images
         run: |
-          docker compose build
+          #docker compose build
 
 
   # ==================================================
