@@ -201,7 +201,7 @@ jobs:
   # ==================================================
 
   deploy:
-    name: "Stage 5 - Deploy ${{ env.DEPLOY_ENV }}"
+    name: "Stage 5 - Deploy DEV"
     needs:
       - unit-test
     runs-on: ubuntu-latest
