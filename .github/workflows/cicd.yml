@@ -4,7 +4,18 @@ on:
   push:
     branches:
       - main
+
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select deployment environment"
+        required: true
+        default: prod
+        type: choice
+        options:
+          - dev
+          - prod
+
 
 jobs:
 
@@ -31,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -60,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -112,15 +125,18 @@ jobs:
     needs:
       - frontend-build
       - backend-build
+
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ------------------------------
+
+      # ----------------------------------------------
       # Backend Tests
-      # ------------------------------
+      # ----------------------------------------------
 
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -161,9 +177,10 @@ jobs:
         working-directory: backend
         run: php vendor/bin/pest
 
-      # ------------------------------
+
+      # ----------------------------------------------
       # Frontend Tests
-      # ------------------------------
+      # ----------------------------------------------
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -187,45 +204,166 @@ jobs:
 
   deploy:
     name: "Stage 5 - Deploy to EC2"
+
     needs:
       - unit-test
+
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
 
     steps:
+
+      # ----------------------------------------------
+      # Checkout
+      # ----------------------------------------------
+
       - name: Checkout Code
         uses: actions/checkout@v4
+
+
+      # ----------------------------------------------
+      # Create SSH Key
+      # ----------------------------------------------
 
       - name: Create SSH Key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
           chmod 600 ec2-key.pem
 
+
+      # ----------------------------------------------
+      # Deploy Application
+      # ----------------------------------------------
+
       - name: Deploy Application
         run: |
+
+          # ==========================================
+          # Select Environment
+          # ==========================================
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENVIRONMENT="${{ inputs.environment }}"
+          else
+            ENVIRONMENT="prod"
+          fi
+
+          echo "=========================================="
+          echo "Deploying Environment: $ENVIRONMENT"
+          echo "=========================================="
+
+
+          # ==========================================
+          # SSH Into EC2
+          # ==========================================
+
           ssh -o StrictHostKeyChecking=no \
             -i ec2-key.pem \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << EOF
+
+
+          # ==========================================
+          # Go To Application Directory
+          # ==========================================
 
           cd /home/ubuntu/mxk_aom
 
+
+          # ==========================================
+          # Show Environment
+          # ==========================================
+
+          echo "=========================================="
+          echo "Environment: $ENVIRONMENT"
+          echo "=========================================="
+
+
+          # ==========================================
+          # Pull Latest Code
+          # ==========================================
+
           echo "Pulling latest code..."
+
           git pull origin main
 
+
+          # ==========================================
+          # Validate Docker Compose
+          # ==========================================
+
+          echo "Validating Docker Compose..."
+
+          docker compose \
+            -f docker/docker-compose.yml \
+            -f docker/$ENVIRONMENT/docker-compose.yml \
+            config
+
+
+          # ==========================================
+          # Stop Existing Containers
+          # ==========================================
+
           echo "Stopping existing containers..."
-          docker compose down
+
+          docker compose \
+            -f docker/docker-compose.yml \
+            -f docker/$ENVIRONMENT/docker-compose.yml \
+            down
+
+
+          # ==========================================
+          # Build Docker Images
+          # ==========================================
 
           echo "Building Docker images..."
-          docker compose build
+
+          docker compose \
+            -f docker/docker-compose.yml \
+            -f docker/$ENVIRONMENT/docker-compose.yml \
+            build
+
+
+          # ==========================================
+          # Start Application
+          # ==========================================
 
           echo "Starting application..."
-          docker compose up -d
+
+          docker compose \
+            -f docker/docker-compose.yml \
+            -f docker/$ENVIRONMENT/docker-compose.yml \
+            up -d
+
+
+          # ==========================================
+          # Container Status
+          # ==========================================
 
           echo "Checking container status..."
-          docker compose ps
+
+          docker compose \
+            -f docker/docker-compose.yml \
+            -f docker/$ENVIRONMENT/docker-compose.yml \
+            ps
+
+
+          # ==========================================
+          # Deployment Complete
+          # ==========================================
+
+          echo "=========================================="
+          echo "Deployment completed successfully!"
+          echo "Environment: $ENVIRONMENT"
+          echo "=========================================="
+
 
           EOF
+
+
+      # ----------------------------------------------
+      # Remove SSH Key
+      # ----------------------------------------------
 
       - name: Remove SSH Key
         if: always()
@@ -239,20 +377,38 @@ jobs:
 
   smoke-test:
     name: "Stage 6 - Smoke Test"
+
     needs:
       - deploy
+
     runs-on: ubuntu-latest
 
     steps:
+
+      # ----------------------------------------------
+      # Frontend Check
+      # ----------------------------------------------
+
       - name: Check Frontend
         run: |
           curl -f http://${{ secrets.EC2_HOST }}:3001
+
+
+      # ----------------------------------------------
+      # Backend Check
+      # ----------------------------------------------
 
       - name: Check Backend
         run: |
           curl -f http://${{ secrets.EC2_HOST }}:8000
 
+
+      # ----------------------------------------------
+      # Success
+      # ----------------------------------------------
+
       - name: Deployment Successful
         run: |
+          echo "=========================================="
           echo "Application deployed successfully!"
-
+          echo "=========================================="

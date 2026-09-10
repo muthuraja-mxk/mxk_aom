@@ -1,8 +1,9 @@
+
 services:
-  # MySQL 9.7 Database Service
+
   db:
     image: mysql:9.0
-    container_name: app_mysql_db
+    container_name: app_mysql_db_dev
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password_secret
@@ -10,7 +11,7 @@ services:
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data_dev:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -proot_password_secret || exit 1"]
       interval: 5s
@@ -18,82 +19,91 @@ services:
       retries: 10
       start_period: 15s
     networks:
-      - app-network
+      - app-network-dev
 
-  # Backend REST API Service (Laravel 13 on PHP 8.4)
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
-    container_name: app_laravel_backend
+    container_name: app_laravel_backend_dev
     restart: always
     environment:
       APP_NAME: "Laravel 13 REST API"
       APP_ENV: local
-      APP_KEY: "base64:c9e6+7uU/X8/pS/6p3sR2T2+QJ5N8n7L0N6V7g8b9c0="
       APP_DEBUG: "true"
       APP_URL: "http://localhost:8000"
+
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: app_db
       DB_USERNAME: app_user
       DB_PASSWORD: app_password
-      FRONTEND_URL: "http://localhost:3000"
+
+      FRONTEND_URL: "http://localhost:3001"
+
     ports:
       - "8000:8000"
+
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - app-network
 
-  # Frontend Web Service (Next.js 16.3 on Node 26)
+    networks:
+      - app-network-dev
+
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
-    container_name: app_nextjs_frontend
+    container_name: app_nextjs_frontend_dev
     restart: always
     environment:
       NEXT_PUBLIC_BACKEND_API_URL: "http://localhost:8000"
       NODE_ENV: development
+
     ports:
       - "3001:3000"
+
     volumes:
-      - ./frontend:/app
+      - ../frontend:/app
       - /app/node_modules
       - /app/.next
+
     depends_on:
       - backend
+
     networks:
-      - app-network
-#Code Quality Layer: SonarQube Server
+      - app-network-dev
+
   sonarqube:
     image: sonarqube:community
-    container_name: local_sonarqube
+    container_name: local_sonarqube_dev
+    restart: unless-stopped
     ports:
       - "9000:9000"
     environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=false # Disables strict production checks for local agility
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "false"
     volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_data_dev:/opt/sonarqube/data
+      - sonarqube_extensions_dev:/opt/sonarqube/extensions
+      - sonarqube_logs_dev:/opt/sonarqube/logs
+    networks:
+      - app-network-dev
 
 networks:
-  app-network:
+  app-network-dev:
     driver: bridge
 
 volumes:
-  db_data:
+  db_data_dev:
     driver: local
 
-  sonarqube_data:
+  sonarqube_data_dev:
     driver: local
 
-  sonarqube_extensions:
+  sonarqube_extensions_dev:
     driver: local
 
-  sonarqube_logs:
+  sonarqube_logs_dev:
     driver: local
