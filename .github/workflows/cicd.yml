@@ -196,7 +196,7 @@ jobs:
         run: echo "Frontend tests not configured yet - skipping"
 
 
-  # ==================================================
+    # ==================================================
   # STAGE 5 - DEPLOY TO EC2
   # ==================================================
 
@@ -249,6 +249,8 @@ jobs:
             -i ec2-key.pem \
             "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
 
+          set -e
+
           cd /home/ubuntu/mxk_aom
 
           echo "=========================================="
@@ -260,13 +262,13 @@ jobs:
 
           echo "=========================================="
           echo "Using Docker Compose file:"
-          echo "docker/${{ env.DEPLOY_ENV }}.yaml"
+          echo "Docker/docker-compose dev.yaml"
           echo "=========================================="
 
           echo "Validating Docker Compose..."
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
+            -f "Docker/docker-compose dev.yaml" \
             config
 
           echo "=========================================="
@@ -274,7 +276,7 @@ jobs:
           echo "=========================================="
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
+            -f "Docker/docker-compose dev.yaml" \
             down
 
           echo "=========================================="
@@ -282,7 +284,7 @@ jobs:
           echo "=========================================="
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
+            -f "Docker/docker-compose dev.yaml" \
             down --rmi local
 
           echo "=========================================="
@@ -296,15 +298,15 @@ jobs:
           echo "=========================================="
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
-            build --no-cache
+            -f "Docker/docker-compose dev.yaml" \
+            build
 
           echo "=========================================="
-          echo "Starting ${{ env.DEPLOY_ENV }} application..."
+          echo "Starting DEV application..."
           echo "=========================================="
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
+            -f "Docker/docker-compose dev.yaml" \
             up -d
 
           echo "=========================================="
@@ -318,7 +320,7 @@ jobs:
           echo "=========================================="
 
           docker compose \
-            -f docker/${{ env.DEPLOY_ENV }}.yaml \
+            -f "Docker/docker-compose dev.yaml" \
             ps
 
           echo "=========================================="
@@ -328,7 +330,7 @@ jobs:
           docker ps
 
           echo "=========================================="
-          echo "${{ env.DEPLOY_ENV }} deployment completed!"
+          echo "DEV deployment completed successfully!"
           echo "=========================================="
 
           EOF
