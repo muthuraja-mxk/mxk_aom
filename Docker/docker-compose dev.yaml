@@ -1,4 +1,3 @@
-
 services:
 
   db:
@@ -22,6 +21,7 @@ services:
       - app-network-dev
 
   backend:
+    image: app-laravel-backend:${IMAGE_TAG:-latest}
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -53,6 +53,7 @@ services:
       - app-network-dev
 
   frontend:
+    image: app-nextjs-frontend:${IMAGE_TAG:-latest}
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -76,6 +77,10 @@ services:
     networks:
       - app-network-dev
 
+  # ==================================================
+  # SONARQUBE
+  # ==================================================
+
   sonarqube:
     image: sonarqube:community
     container_name: local_sonarqube_dev
@@ -91,11 +96,15 @@ services:
     networks:
       - app-network-dev
 
+
 networks:
+
   app-network-dev:
     driver: bridge
 
+
 volumes:
+
   db_data_dev:
     driver: local
 
