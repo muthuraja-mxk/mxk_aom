@@ -156,4 +156,4 @@ docker compose down
 To remove persistent volumes as well:
 ```bash
 docker compose down -v
-```
+
