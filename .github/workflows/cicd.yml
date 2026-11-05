@@ -12,8 +12,10 @@ concurrency:
 
 env:
   DEPLOY_ENV: dev
+  COMPOSE_FILE: "docker-compose dev.yaml"
 
 jobs:
+
   # ==========================================
   # STAGE 1 - FRONTEND BUILD
   # ==========================================
@@ -71,17 +73,11 @@ jobs:
             --optimize-autoloader \
             --no-scripts
 
-      - name: Laravel Package Discovery
-        working-directory: backend
-        run: |
-          mkdir -p bootstrap/cache
-          php artisan package:discover --ansi
-
   # ==========================================
   # STAGE 3 - UNIT TESTS
   # ==========================================
   unit-test:
-    name: "Stage 3 - Unit Tests"
+    name: "Stage 3 - Unit Testing"
     needs:
       - frontend-build
       - backend-build
@@ -120,9 +116,9 @@ jobs:
         run: php artisan test
 
   # ==========================================
-  # STAGE 4 - DOCKER BUILD VALIDATION
+  # STAGE 4 - DOCKER BUILD
   # ==========================================
-    docker-build:
+  docker-build:
     name: "Stage 4 - Docker Build"
     needs:
       - unit-test
@@ -132,17 +128,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Check Docker Compose File
+        run: |
+          test -f "$COMPOSE_FILE"
+          echo "Using DEV Compose file: $COMPOSE_FILE"
+
       - name: Validate DEV Compose Configuration
         run: |
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            config --quiet
+          docker compose -f "$COMPOSE_FILE" config --quiet
 
       - name: Build DEV Docker Images
         run: |
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            build backend frontend
+          docker compose -f "$COMPOSE_FILE" build backend frontend
 
   # ==========================================
   # STAGE 5 - DEPLOY TO EC2 DEV
@@ -182,21 +179,26 @@ jobs:
 
               cd /home/ubuntu/mxk_aom
 
-              echo "================================"
+              COMPOSE_FILE="docker-compose dev.yaml"
+
+              echo "=================================="
               echo "Starting DEV deployment"
-              echo "================================"
+              echo "=================================="
 
               echo "Pulling latest code..."
               git pull --ff-only origin main
 
-              echo "Validating DEV Compose configuration..."
-              docker compose -f docker-compose.yml config --quiet
+              echo "Checking DEV Compose file..."
+              test -f "$COMPOSE_FILE"
 
-              echo "Building latest application images..."
-              docker compose -f docker-compose.yml build backend frontend
+              echo "Validating DEV configuration..."
+              docker compose -f "$COMPOSE_FILE" config --quiet
+
+              echo "Building updated application images..."
+              docker compose -f "$COMPOSE_FILE" build backend frontend
 
               echo "Recreating DEV application containers..."
-              docker compose -f docker-compose.yml up -d \
+              docker compose -f "$COMPOSE_FILE" up -d \
                 --no-deps \
                 --force-recreate \
                 backend frontend
@@ -205,7 +207,7 @@ jobs:
               sleep 10
 
               echo "DEV container status:"
-              docker compose -f docker-compose.yml ps
+              docker compose -f "$COMPOSE_FILE" ps
 
               echo "DEV deployment commands completed."
 
@@ -247,7 +249,7 @@ jobs:
 
       - name: Deployment Successful
         run: |
-          echo "================================"
+          echo "=================================="
           echo "AOM DEV deployment successful"
           echo "Environment: $DEPLOY_ENV"
-          echo "================================"
+          echo "=================================="
