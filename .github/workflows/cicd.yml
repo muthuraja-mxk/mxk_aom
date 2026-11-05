@@ -122,7 +122,7 @@ jobs:
   # ==========================================
   # STAGE 4 - DOCKER BUILD VALIDATION
   # ==========================================
-  docker-build:
+    docker-build:
     name: "Stage 4 - Docker Build"
     needs:
       - unit-test
@@ -132,12 +132,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Validate Docker Compose
-        run: docker compose -f docker-compose.yml config --quiet
-
-      - name: Build Docker Images
+      - name: Validate DEV Compose Configuration
         run: |
-          docker compose -f docker-compose.yml build backend frontend
+          docker compose \
+            -f "Docker/docker-compose dev.yaml" \
+            config --quiet
+
+      - name: Build DEV Docker Images
+        run: |
+          docker compose \
+            -f "Docker/docker-compose dev.yaml" \
+            build backend frontend
 
   # ==========================================
   # STAGE 5 - DEPLOY TO EC2 DEV
