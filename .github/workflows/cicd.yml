@@ -1,543 +1,248 @@
-name: CI-CD Pipeline
-
-
-# ==================================================
-# TRIGGERS
-# ==================================================
+name: AOM CI-CD Pipeline
 
 on:
-
   push:
     branches:
       - main
-
   workflow_dispatch:
 
-
-# ==================================================
-# GLOBAL ENVIRONMENT
-# ==================================================
+concurrency:
+  group: aom-dev-deployment
+  cancel-in-progress: false
 
 env:
   DEPLOY_ENV: dev
 
-
 jobs:
-
-  # ==================================================
-  # STAGE 1 - CHECKOUT
-  # ==================================================
-
-  checkout:
-    name: "Stage 1 - Checkout"
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-
-  # ==================================================
-  # STAGE 2 - FRONTEND INSTALL & BUILD
-  # ==================================================
-
+  # ==========================================
+  # STAGE 1 - FRONTEND BUILD
+  # ==========================================
   frontend-build:
-    name: "Stage 2 - Frontend Build"
-    needs: checkout
+    name: "Stage 1 - Frontend Build"
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
-
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-
-
-      - name: Install Dependencies
-        working-directory: frontend
-        run: npm ci
-
-
-      - name: Build Next.js
-        working-directory: frontend
-        run: npm run build
-
-
-  # ==================================================
-  # STAGE 3 - BACKEND INSTALL
-  # ==================================================
-
-  backend-build:
-    name: "Stage 3 - Laravel Build"
-    needs: checkout
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
-          coverage: none
-
-
-      - name: Check PHP Version
-        run: php -v
-
-
-      - name: Check Composer Version
-        run: composer --version
-
-
-      - name: Validate composer.json
-        working-directory: backend
-        run: composer validate --no-check-publish
-
-
-      - name: Prepare Laravel Directories
-        working-directory: backend
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 775 bootstrap/cache
-
-
-      - name: Install Composer Dependencies
-        working-directory: backend
-        run: |
-          composer install \
-            --no-interaction \
-            --prefer-dist \
-            --optimize-autoloader \
-            --no-scripts
-
-
-      - name: Laravel Package Discovery
-        working-directory: backend
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 775 bootstrap/cache
-          php artisan package:discover --ansi
-
-
-  # ==================================================
-  # STAGE 4 - UNIT TEST
-  # ==================================================
-
-  unit-test:
-    name: "Stage 4 - Unit Testing"
-
-    needs:
-      - frontend-build
-      - backend-build
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-
-      # ------------------------------------------------
-      # BACKEND TESTS
-      # ------------------------------------------------
-
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
-          coverage: none
-
-
-      - name: Check PHP Version
-        run: php -v
-
-
-      - name: Check Composer Version
-        run: composer --version
-
-
-      - name: Install Composer Dependencies
-        working-directory: backend
-        run: |
-          composer install \
-            --no-interaction \
-            --prefer-dist \
-            --optimize-autoloader \
-            --no-scripts
-
-
-      - name: Prepare Laravel Environment
-        working-directory: backend
-        run: |
-          cp .env.example .env
-          php artisan key:generate --force
-
-
-      - name: Laravel Package Discovery
-        working-directory: backend
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 775 bootstrap/cache
-          php artisan package:discover --ansi
-
-
-      - name: Run Unit Tests
-        working-directory: backend
-        run: php vendor/bin/pest
-
-
-      # ------------------------------------------------
-      # FRONTEND TESTS
-      # ------------------------------------------------
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 26
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
 
       - name: Install Frontend Dependencies
         working-directory: frontend
         run: npm ci
 
-
-      - name: Frontend Test
+      - name: Build Frontend
         working-directory: frontend
-        run: echo "Frontend tests not configured yet - skipping"
+        run: npm run build
 
+  # ==========================================
+  # STAGE 2 - BACKEND BUILD
+  # ==========================================
+  backend-build:
+    name: "Stage 2 - Laravel Build"
+    runs-on: ubuntu-latest
 
-  # ==================================================
-  # STAGE 5 - DEPLOY TO EC2
-  # ==================================================
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  deploy:
-    name: "Stage 5 - Deploy DEV"
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+          coverage: none
 
+      - name: Validate Composer
+        working-directory: backend
+        run: composer validate --no-check-publish
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: |
+          composer install \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-scripts
+
+      - name: Laravel Package Discovery
+        working-directory: backend
+        run: |
+          mkdir -p bootstrap/cache
+          php artisan package:discover --ansi
+
+  # ==========================================
+  # STAGE 3 - UNIT TESTS
+  # ==========================================
+  unit-test:
+    name: "Stage 3 - Unit Tests"
+    needs:
+      - frontend-build
+      - backend-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+          coverage: none
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: |
+          composer install \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-scripts
+
+      - name: Prepare Laravel Test Environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          mkdir -p bootstrap/cache
+          php artisan key:generate --force
+          php artisan package:discover --ansi
+
+      - name: Run Laravel Tests
+        working-directory: backend
+        run: php artisan test
+
+  # ==========================================
+  # STAGE 4 - DOCKER BUILD VALIDATION
+  # ==========================================
+  docker-build:
+    name: "Stage 4 - Docker Build"
     needs:
       - unit-test
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: docker compose -f docker-compose.yml config --quiet
+
+      - name: Build Docker Images
+        run: |
+          docker compose -f docker-compose.yml build backend frontend
+
+  # ==========================================
+  # STAGE 5 - DEPLOY TO EC2 DEV
+  # ==========================================
+  deploy:
+    name: "Stage 5 - Deploy DEV"
+    needs:
+      - docker-build
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
 
     steps:
-
-      # ------------------------------------------------
-      # CHECKOUT
-      # ------------------------------------------------
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
-
-      # ------------------------------------------------
-      # SHOW DEPLOYMENT ENVIRONMENT
-      # ------------------------------------------------
-
-      - name: Show Deployment Environment
-        run: |
-          echo "=========================================="
-          echo "Deployment Environment: ${{ env.DEPLOY_ENV }}"
-          echo "=========================================="
-
-
-      # ------------------------------------------------
-      # CREATE SSH KEY
-      # ------------------------------------------------
-
       - name: Create SSH Key
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
+          printf '%s\n' "$EC2_SSH_KEY" > ec2-key.pem
           chmod 600 ec2-key.pem
 
-
-      # ==================================================
-      # DEPLOY APPLICATION
-      # ==================================================
-
       - name: Deploy Application
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-
-          ssh -o StrictHostKeyChecking=no \
-            -i ec2-key.pem \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
-
           set -e
 
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -i ec2-key.pem \
+            "$EC2_USER@$EC2_HOST" << 'EOF'
 
-          # ==================================================
-          # APPLICATION DIRECTORY
-          # ==================================================
+              set -e
 
-          cd /home/ubuntu/mxk_aom
+              cd /home/ubuntu/mxk_aom
 
+              echo "================================"
+              echo "Starting DEV deployment"
+              echo "================================"
 
-          echo "=========================================="
-          echo "Starting ${{ env.DEPLOY_ENV }} deployment"
-          echo "=========================================="
+              echo "Pulling latest code..."
+              git pull --ff-only origin main
 
+              echo "Validating DEV Compose configuration..."
+              docker compose -f docker-compose.yml config --quiet
 
-          # ==================================================
-          # PULL LATEST CODE
-          # ==================================================
+              echo "Building latest application images..."
+              docker compose -f docker-compose.yml build backend frontend
 
-          echo "Pulling latest code..."
+              echo "Recreating DEV application containers..."
+              docker compose -f docker-compose.yml up -d \
+                --no-deps \
+                --force-recreate \
+                backend frontend
 
-          git pull origin main
+              echo "Waiting for application startup..."
+              sleep 10
 
+              echo "DEV container status:"
+              docker compose -f docker-compose.yml ps
 
-          # ==================================================
-          # DOCKER COMPOSE FILE
-          # ==================================================
-
-          echo "=========================================="
-          echo "Using Docker Compose file:"
-          echo "Docker/docker-compose dev.yaml"
-          echo "=========================================="
-
-
-          # ==================================================
-          # VALIDATE DOCKER COMPOSE
-          # ==================================================
-
-          echo "Validating Docker Compose..."
-
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            config
-
-
-          # ==================================================
-          # GENERATE DOCKER IMAGE TAG
-          # ==================================================
-
-          echo "=========================================="
-          echo "Generating Docker Image Tag"
-          echo "=========================================="
-
-
-          VERSION_FILE=".docker-version"
-
-
-          if [ ! -f "$VERSION_FILE" ]; then
-            echo "0" > "$VERSION_FILE"
-          fi
-
-
-          CURRENT_VERSION=$(cat "$VERSION_FILE")
-
-
-          NEXT_VERSION=$((CURRENT_VERSION + 1))
-
-
-          IMAGE_TAG="v${NEXT_VERSION}"
-
-
-          echo "$NEXT_VERSION" > "$VERSION_FILE"
-
-
-          export IMAGE_TAG="$IMAGE_TAG"
-
-
-          echo "Docker Image Tag: $IMAGE_TAG"
-
-
-          # ==================================================
-          # REMOVE OLD BACKEND + FRONTEND CONTAINERS
-          # ==================================================
-
-          echo "=========================================="
-          echo "Removing old application containers..."
-          echo "=========================================="
-
-
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            rm -sf backend frontend
-
-
-          # ==================================================
-          # REMOVE DANGLING IMAGES
-          # ==================================================
-
-          echo "=========================================="
-          echo "Removing dangling Docker images..."
-          echo "=========================================="
-
-
-          docker image prune -f
-
-
-          # ==================================================
-          # BUILD BACKEND + FRONTEND
-          # ==================================================
-
-          echo "=========================================="
-          echo "Building Backend and Frontend..."
-          echo "Docker Image Tag: $IMAGE_TAG"
-          echo "=========================================="
-
-
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            build backend frontend
-
-
-          # ==================================================
-          # SHOW CREATED IMAGES
-          # ==================================================
-
-          echo "=========================================="
-          echo "Docker Images"
-          echo "=========================================="
-
-
-          docker images
-
-
-          # ==================================================
-          # START DB + BACKEND + FRONTEND
-          # ==================================================
-
-          echo "=========================================="
-          echo "Starting DB, Backend and Frontend..."
-          echo "=========================================="
-
-
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            up -d db backend frontend
-
-
-          # ==================================================
-          # WAIT FOR CONTAINERS
-          # ==================================================
-
-          echo "=========================================="
-          echo "Waiting for containers..."
-          echo "=========================================="
-
-
-          sleep 10
-
-
-          # ==================================================
-          # CONTAINER STATUS
-          # ==================================================
-
-          echo "=========================================="
-          echo "Container Status"
-          echo "=========================================="
-
-
-          docker compose \
-            -f "Docker/docker-compose dev.yaml" \
-            ps
-
-
-          # ==================================================
-          # RUNNING CONTAINERS
-          # ==================================================
-
-          echo "=========================================="
-          echo "Running Docker Containers"
-          echo "=========================================="
-
-
-          docker ps
-
-
-          # ==================================================
-          # DEPLOYMENT COMPLETE
-          # ==================================================
-
-          echo "=========================================="
-          echo "DEV deployment completed successfully!"
-          echo "Docker Image Tag: $IMAGE_TAG"
-          echo "=========================================="
-
+              echo "DEV deployment commands completed."
 
           EOF
 
-
-      # ------------------------------------------------
-      # REMOVE SSH KEY
-      # ------------------------------------------------
-
       - name: Remove SSH Key
         if: always()
-        run: |
-          rm -f ec2-key.pem
+        run: rm -f ec2-key.pem
 
-
-  # ==================================================
+  # ==========================================
   # STAGE 6 - SMOKE TEST
-  # ==================================================
-
+  # ==========================================
   smoke-test:
-    name: "Stage 6 - Smoke Test"
-
+    name: "Stage 6 - DEV Health Check"
     needs:
       - deploy
-
     runs-on: ubuntu-latest
 
     steps:
-
-
-      # ------------------------------------------------
-      # FRONTEND CHECK
-      # ------------------------------------------------
-
       - name: Check Frontend
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-
-          echo "Checking frontend..."
-
-          curl -f http://${{ secrets.EC2_HOST }}:3001
-
-          echo "Frontend is healthy!"
-
-
-      # ------------------------------------------------
-      # BACKEND CHECK
-      # ------------------------------------------------
+          curl --fail --silent --show-error \
+            --retry 5 \
+            --retry-delay 5 \
+            --retry-connrefused \
+            "http://${EC2_HOST}:3001"
 
       - name: Check Backend
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-
-          echo "Checking backend..."
-
-          curl -f http://${{ secrets.EC2_HOST }}:8000
-
-          echo "Backend is healthy!"
-
-
-      # ------------------------------------------------
-      # SUCCESS
-      # ------------------------------------------------
+          curl --fail --silent --show-error \
+            --retry 5 \
+            --retry-delay 5 \
+            --retry-connrefused \
+            "http://${EC2_HOST}:8000"
 
       - name: Deployment Successful
         run: |
-
-          echo "=========================================="
-          echo "Application deployed successfully!"
-          echo "Environment: ${{ env.DEPLOY_ENV }}"
-          echo "=========================================="
+          echo "================================"
+          echo "AOM DEV deployment successful"
+          echo "Environment: $DEPLOY_ENV"
+          echo "================================"
